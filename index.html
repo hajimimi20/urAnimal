@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>心理測驗：測出你的隱藏靈魂動物</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #e0f2fe, #fce7f3);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 550px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #334155;
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        p.subtitle {
+            color: #64748b;
+            font-size: 1rem;
+            margin-bottom: 25px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 25px;
+        }
+
+        .progress {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #3b82f6, #ec4899);
+            transition: width 0.3s ease;
+        }
+
+        .question-text {
+            font-size: 1.25rem;
+            color: #1e293b;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-btn {
+            background: #f8fafc;
+            border: 2px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 14px 20px;
+            font-size: 1rem;
+            color: #334155;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+        }
+
+        .option-btn:hover {
+            background: #e0f2fe;
+            border-color: #3b82f6;
+            color: #1d4ed8;
+            transform: translateY(-2px);
+        }
+
+        .result-container {
+            display: none;
+        }
+
+        .animal-icon {
+            font-size: 5rem;
+            margin-bottom: 10px;
+        }
+
+        .result-title {
+            font-size: 1.6rem;
+            color: #0f172a;
+            margin-bottom: 15px;
+        }
+
+        .result-desc {
+            color: #475569;
+            line-height: 1.6;
+            font-size: 1.05rem;
+            text-align: left;
+            background: #f1f5f9;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .restart-btn {
+            background: linear-gradient(90deg, #3b82f6, #ec4899);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+            transition: opacity 0.2s;
+        }
+
+        .restart-btn:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <!-- 測驗區域 -->
+        <div id="quiz-section">
+            <h1>🐾 靈魂動物測驗</h1>
+            <p class="subtitle">回答 4 個簡單問題，揭開你內心深處的動物特質！</p>
+            
+            <div class="progress-bar">
+                <div class="progress" id="progress"></div>
+            </div>
+
+            <div class="question-text" id="question">題目載入中...</div>
+            <div class="options-container" id="options"></div>
+        </div>
+
+        <!-- 結果區域 -->
+        <div id="result-section" class="result-container">
+            <div class="animal-icon" id="result-icon">🦁</div>
+            <div class="result-title" id="result-title">你的靈魂動物是：</div>
+            <div class="result-desc" id="result-desc">分析載入中...</div>
+            <button class="restart-btn" onclick="restartQuiz()">再測一次</button>
+        </div>
+    </div>
+
+    <script>
+        // 測驗題目與選項設計 (A: 貓, B: 狗, C: 鷹, D: 樹懶)
+        const questions = [
+            {
+                question: "1. 週末難得沒有任何安排，你最理想的度假方式是？",
+                options: [
+                    { text: "待在家裡喝咖啡、看書，享受安靜時光", type: "cat" },
+                    { text: "約一大群朋友出去踏青、烤肉或戶外運動", type: "dog" },
+                    { text: "規劃一次深度旅遊，探索沒去過的新景點", type: "eagle" },
+                    { text: "躺在床上滑手機、睡覺，能不動就不動", type: "sloth" }
+                ]
+            },
+            {
+                question: "2. 在團體或職場中，你通常扮演什麼角色？",
+                options: [
+                    { text: "獨立作業的高手，習慣按照自己的節奏做事", type: "cat" },
+                    { text: "團隊的氣氛組，總是帶給大家正能量", type: "dog" },
+                    { text: "決策與領導者，果斷指引方向", type: "eagle" },
+                    { text: "隨和的配合者，大家都好我就好", type: "sloth" }
+                ]
+            },
+            {
+                question: "3. 遇到突發的緊急狀況或壓力時，你的第一反應是？",
+                options: [
+                    { text: "先退一步冷靜觀察，再找出最靈巧的應對方式", type: "cat" },
+                    { text: "立刻求助夥伴或陪伴朋友，大家一起解決", type: "dog" },
+                    { text: "迅速分析局勢，大膽並果斷地做出決定", type: "eagle" },
+                    { text: "保持佛系，車到山前必有路，急也沒有用", type: "sloth" }
+                ]
+            },
+            {
+                question: "4. 你覺得身邊朋友最常怎麼形容你？",
+                options: [
+                    { text: "神秘、有獨特品味、有點高冷", type: "cat" },
+                    { text: "熱情、忠誠、非常好相處", type: "dog" },
+                    { text: "有主見、有目標、值得信賴", type: "eagle" },
+                    { text: "情緒穩定、隨和、療癒系", type: "sloth" }
+                ]
+            }
+        ];
+
+        // 結果資料
+        const results = {
+            cat: {
+                title: "獨立高冷的【優雅貓咪】",
+                icon: "🐱",
+                desc: "你擁有強烈的自我意識與獨立性格。你心思細膩、觀察力敏銳，懂得享受孤獨，不隨波逐流。雖然外表可能讓人覺得有點距離感，但只要真正走入你內心，就會發現你非常深情且專一。"
+            },
+            dog: {
+                title: "熱情忠誠的【活力金毛】",
+                icon: "🐶",
+                desc: "你是一個溫暖且充滿能量的人！社交對你來說是充電的方式，你對朋友極其忠誠，總是樂於助人且帶給周遭快樂。你的直率與真誠讓你擁有極佳的人緣。"
+            },
+            eagle: {
+                title: "遠見卓越的【高空飛鷹】",
+                icon: "🦅",
+                desc: "你具備極強的目標導向與敏銳的洞察力。你不喜歡拘泥於小細節，而是能從宏觀的角度審視局勢。面對挑戰時果斷勇敢，具備天生的領導者氣質。"
+            },
+            sloth: {
+                title: "佛系療癒的【自在樹懶】",
+                icon: "🦥",
+                desc: "你是團隊中的情緒穩定器，擁有超凡的「鬆弛感」。生活中的起伏很難打亂你的節奏，你擅長發現生活中簡單的快樂，這種隨遇而安的態度讓周遭的人感到無比放鬆與療癒。"
+            }
+        };
+
+        let currentQuestion = 0;
+        let scores = { cat: 0, dog: 0, eagle: 0, sloth: 0 };
+
+        const questionEl = document.getElementById('question');
+        const optionsEl = document.getElementById('options');
+        const progressEl = document.getElementById('progress');
+        const quizSection = document.getElementById('quiz-section');
+        const resultSection = document.getElementById('result-section');
+
+        function loadQuestion() {
+            const q = questions[currentQuestion];
+            questionEl.innerText = q.question;
+            optionsEl.innerHTML = '';
+
+            // 更新進度條
+            const progressPercent = ((currentQuestion) / questions.length) * 100;
+            progressEl.style.width = `${progressPercent}%`;
+
+            q.options.forEach(option => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = option.text;
+                btn.onclick = () => selectOption(option.type);
+                optionsEl.appendChild(btn);
+            });
+        }
+
+        function selectOption(type) {
+            scores[type]++;
+            currentQuestion++;
+
+            if (currentQuestion < questions.length) {
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            // 找出最高分的動物
+            let highestType = 'cat';
+            let maxScore = -1;
+            
+            for (const type in scores) {
+                if (scores[type] > maxScore) {
+                    maxScore = scores[type];
+                    highestType = type;
+                }
+            }
+
+            const result = results[highestType];
+            
+            quizSection.style.display = 'none';
+            resultSection.style.display = 'block';
+
+            document.getElementById('result-icon').innerText = result.icon;
+            document.getElementById('result-title').innerText = result.title;
+            document.getElementById('result-desc').innerText = result.desc;
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            scores = { cat: 0, dog: 0, eagle: 0, sloth: 0 };
+            resultSection.style.display = 'none';
+            quizSection.style.display = 'block';
+            loadQuestion();
+        }
+
+        // 初始化載入
+        loadQuestion();
+    </script>
+</body>
+</html>
